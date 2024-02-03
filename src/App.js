@@ -1,69 +1,40 @@
 import "./App.css";
 import io from "socket.io-client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import Chat from "./Chat";
 
-const socket = io.connect("http://localhost:3001");
+const socket = io.connect("http://localhost:3002");
 
 function App() {
-  //Room State
+  const [username, setUsername] = useState("");
   const [room, setRoom] = useState("");
+  const [showChat, setShowChat] = useState(false);
 
-  // Messages States
-  const [message, setMessage] = useState("");
-  const [messageReceived, setMessageReceived] = useState("");
-
-  const join = () => {
-    if (room !== "") {
-      socket.emit("join_room", room);
+  const joinRoom = () => {
+    if (username !== "" && room !== "") {
+      socket.emit("joinroom", room);
+      setShowChat(true);
     }
   };
 
-  const sendMessage = () => {
-    socket.emit("send_message", { message, room });
-
-    
-  };
-
-  useEffect(() => {
-    socket.on("receive_message", (data) => {
-      setMessageReceived(data.message);
-    });
-  }, [socket]);
   return (
-    <div className="App ">
-     <div className=" d-flex mt-4 justify-content-center align-items-center ">
-     <div className="card shadow w-25">
-        <input className="form-control "
-          placeholder="Room Number..."
-          onChange={(event) => {
-            setRoom(event.target.value);
-          }}
-        />
+    <div style={{ background: "black",color:"white" }}>
+<div className="row vh-100 d-flex w-100 justify-content-center align-items-center">
+ 
+ {
+  !showChat ?
+   <div className="col-lg-3">
 
-      
-      </div>
-      <button onClick={join} className="btn btn-dark ms-4 fw-bold"> JOIN ROOM</button>
-     </div>
-
-     <div  className=" d-flex justify-content-center align-items-center  mt-5">
-    <div className="w-25">
-    <input
-        placeholder="Message..." className="form-control "
-        onChange={(event) => {
-          setMessage(event.target.value); 
-        }} value={message}
-      />
-    </div>
-      <button className="btn btn-success ms-4 fw-bold" onClick={sendMessage}> Send Message</button>
-    
-      
-     </div>
- <div   className="card shadow d-flex justify-content-center align-items-center  mt-5" style={{height:"100px"}}>
-<div className="w-25">
-<h3> Message:</h3>
-     <h5 className="text-danger">{messageReceived}</h5>
+    <h1>Welcome👋</h1>
+    <h6>Set a username and room to get started</h6>
+    <input className="form-control" style={{background:"grey"}}placeholder="Room" onChange={(e)=>setRoom(e.target.value)}/>
+    <input className="form-control mt-3" placeholder="Username" style={{background:"grey"}}onChange={(e)=>setUsername(e.target.value)}/>
+    <button className="btn mt-3 fw-bold" style={{background:"orange"}} onClick={joinRoom}>Enter</button>
+  </div>
+  : <Chat socket={socket}  username={username} room={room} />
+ }
 </div>
- </div>
+
     </div>
   );
 }
